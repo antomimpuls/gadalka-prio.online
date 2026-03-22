@@ -330,8 +330,8 @@ footer{background:#0b131a;padding:40px 0;text-align:center;border-top:1px solid 
 
 <div class="sticky-messengers" id="stickyMessengers">
 <div class="sticky-messenger-options" id="stickyMessengerOptions">
-<a href="#" class="btn btn-wa sticky-messenger-option" data-wa="true" role="button" tabindex="0">📲 WhatsApp</a>
-<a href="#" class="btn btn-tg sticky-messenger-option" data-telegram="true" role="button" tabindex="0">✈ Telegram</a>
+<a class="btn btn-wa sticky-messenger-option" data-wa="true" role="button" tabindex="0">📲 WhatsApp</a>
+<a class="btn btn-tg sticky-messenger-option" data-telegram="true" role="button" tabindex="0">✈ Telegram</a>
 </div>
 <button type="button" class="btn sticky-messenger-toggle" id="stickyMessengerToggle" aria-label="Открыть выбор мессенджера" aria-expanded="false">💬</button>
 </div>
@@ -351,8 +351,8 @@ footer{background:#0b131a;padding:40px 0;text-align:center;border-top:1px solid 
 <div class="trust-item"><span style="font-size:1.5rem">📱</span><span style="font-size:0.85rem;font-weight:600">Связь 7 дней в неделю</span></div>
         </div>
         <div class="hero-cta">
-        <a href="#" class="btn btn-wa" data-wa="true" role="button" tabindex="0">📲 Написать в WhatsApp</a>
-        <a href="#" class="btn btn-tg" data-telegram="true" role="button" tabindex="0">✈ Связаться в Telegram</a>
+        <a class="btn btn-wa" data-wa="true" role="button" tabindex="0">📲 Написать в WhatsApp</a>
+        <a class="btn btn-tg" data-telegram="true" role="button" tabindex="0">✈ Связаться в Telegram</a>
         </div>
         </div>
         <div>
@@ -734,8 +734,8 @@ footer{background:#0b131a;padding:40px 0;text-align:center;border-top:1px solid 
 <h2>Нужна помощь — напишите мне</h2>
 <p style="font-size:1.2rem;color:#e0f2fe">Сделаю бесплатный просмотр и скажу, как действовать дальше.</p>
 <div class="cta-buttons">
-<a href="#" class="btn btn-wa" data-messenger="wa">Написать в WhatsApp</a>
-<a href="#" class="btn btn-tg" data-messenger="tg">Написать в Telegram</a>
+<a class="btn btn-wa" data-messenger="wa" role="button" tabindex="0">Написать в WhatsApp</a>
+<a class="btn btn-tg" data-messenger="tg" role="button" tabindex="0">Написать в Telegram</a>
 </div>
 </div>
 </div>
@@ -901,6 +901,8 @@ function initMessengerIntent(){
                     btn.setAttribute('href', targetUrl);
                     btn.setAttribute('target', '_blank');
                     btn.setAttribute('rel', 'noopener');
+                    btn.removeAttribute('role');
+                    btn.removeAttribute('tabindex');
                 } else {
                     btn.removeAttribute('href');
                     btn.removeAttribute('target');
