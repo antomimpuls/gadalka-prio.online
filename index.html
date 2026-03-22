@@ -876,12 +876,31 @@ function initMessengerIntent(){
     const tgButtons = Array.from(document.querySelectorAll('[data-messenger="tg"],[data-telegram],.btn-tg'));
     const attachDirectHandlers = (buttons, type, targetUrl) => {
         buttons.forEach(btn => {
+            const isAnchor = btn.tagName === 'A';
             if (btn.tagName === 'A') {
-                btn.setAttribute('href', targetUrl);
-                btn.setAttribute('target', '_blank');
-                btn.setAttribute('rel', 'noopener');
+                if (window.__METRIKA_MESSENGER_VISIBLE__ !== false) {
+                    btn.setAttribute('href', targetUrl);
+                    btn.setAttribute('target', '_blank');
+                    btn.setAttribute('rel', 'noopener');
+                } else {
+                    btn.removeAttribute('href');
+                    btn.removeAttribute('target');
+                    btn.removeAttribute('rel');
+                    btn.setAttribute('role', 'button');
+                    btn.setAttribute('tabindex', '0');
+                }
             }
-            btn.addEventListener('click', () => {
+            const openDirect = () => {
+                let opened = false;
+                try {
+                    const newTab = window.open(targetUrl, '_blank');
+                    opened = Boolean(newTab);
+                } catch (err) {}
+                if (!opened) {
+                    try { window.location.href = targetUrl; } catch (err) {}
+                }
+            };
+            btn.addEventListener('click', evt => {
                 if (window.__METRIKA_MESSENGER_VISIBLE__ !== false && typeof ym === 'function' && YM_COUNTER) {
                     try {
                         ym(YM_COUNTER, 'reachGoal', type === 'telegram' ? 'tg_click' : 'wa_click');
@@ -897,7 +916,22 @@ function initMessengerIntent(){
                     })
                     : Promise.resolve();
                 Promise.resolve(trackPromise).catch(() => {});
+                if (window.__METRIKA_MESSENGER_VISIBLE__ === false || !isAnchor) {
+                    if (evt) {
+                        evt.preventDefault();
+                        evt.stopPropagation();
+                    }
+                    openDirect();
+                }
             });
+            if (window.__METRIKA_MESSENGER_VISIBLE__ === false) {
+                btn.addEventListener('keydown', evt => {
+                    if (evt.key === 'Enter' || evt.key === ' ') {
+                        evt.preventDefault();
+                        openDirect();
+                    }
+                });
+            }
         });
     };
     if (TARGET_WA_URL) {
