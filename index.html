@@ -793,65 +793,6 @@ footer{background:#0b131a;padding:40px 0;text-align:center;border-top:1px solid 
         <p style="text-align:center;margin-top:40px">Используя Сайт, вы подтверждаете согласие с настоящей Политикой конфиденциальности.</p>
         </div>
         </div>
-<div class="age-widget" id="ageWidget">
-  <button class="age-widget-btn" data-open-age>
-    <span class="age-widget-icon">18+</span>
-    <span class="age-widget-text">Подтвердите возраст 18+</span>
-  </button>
-</div>
-<div class="age-modal" id="ageModal">
-  <div class="age-modal-overlay" onclick="closeAgeModal()"></div>
-  <div class="age-modal-content">
-    <button type="button" class="age-modal-close" onclick="closeAgeModal()" aria-label="Закрыть">&times;</button>
-    <div class="age-modal-icon">18+</div>
-    <h2 class="age-modal-title">Подтвердите возраст 18+</h2>
-    <p class="age-modal-text">Контакты доступны только взрослым. Подтвердите, что вам исполнилось 18 лет.</p>
-    <label class="age-modal-checkbox">
-      <input type="checkbox" id="ageConfirmCheckbox">
-      <span>Мне исполнилось 18 лет, я принимаю условия</span>
-    </label>
-    <div class="age-modal-actions">
-      <button type="button" class="btn age-confirm-btn" id="ageConfirmBtn" disabled>Подтвердить и открыть контакты</button>
-      <button type="button" class="btn age-cancel-btn" onclick="closeAgeModal()">Отмена</button>
-    </div>
-  </div>
-</div>
-<div class="age-unlock-modal" id="ageUnlockModal">
-  <strong>Контакты доступны</strong>
-  <p>Теперь вы можете написать в WhatsApp и Telegram.</p>
-  <button class="btn" onclick="closeUnlockModal()">Понятно</button>
-</div>
-<div class="contact-intent-modal" id="contactIntentModal">
-  <div class="contact-intent-overlay" onclick="closeContactIntentModal()"></div>
-  <div class="contact-intent-content">
-    <button type="button" class="contact-intent-close" onclick="closeContactIntentModal()" aria-label="Закрыть">&times;</button>
-    <h3 class="contact-intent-title">Последний шаг перед открытием <span class="contact-intent-highlight" id="intentMessengerLabel">WhatsApp</span></h3>
-    <p class="contact-intent-text">Выберите тему обращения и подтвердите готовность написать. Так я защищаю контакты от случайных кликов.</p>
-    <div class="intent-step">
-      <label for="intentTopic">Что нужно решить?</label>
-      <select id="intentTopic" class="intent-select">
-        <option value="">Выберите ситуацию</option>
-        <option value="love">Вернуть или удержать любимого</option>
-        <option value="negative">Снять порчу, сглаз или тяжесть</option>
-        <option value="diagnostic">Нужен просмотр и разбор</option>
-        <option value="other">Другая проблема</option>
-      </select>
-    </div>
-    <div class="intent-step">
-      <label>Подтвердите намерение</label>
-      <label class="intent-checkbox">
-        <input type="checkbox" id="intentReadyCheckbox">
-        <span>Я действительно хочу открыть чат и описать ситуацию</span>
-      </label>
-    </div>
-    <div class="intent-timer" id="intentTimerHint"></div>
-    <div class="contact-intent-actions">
-      <a href="#" class="btn intent-confirm-btn disabled" id="intentConfirmBtn" role="button" aria-disabled="true">Открыть чат</a>
-      <button type="button" class="btn intent-cancel-btn" onclick="closeContactIntentModal()">Вернуться</button>
-    </div>
-  </div>
-</div>
-
 <script>
 (() => {
 const SETTINGS = window.__SITE_SETTINGS__ || {};
@@ -859,28 +800,12 @@ const YM_COUNTER = Number(SETTINGS.yandexMetrikaId || 0);
 const TARGET_WA_URL = window.__TARGET_WA_URL__;
 const TARGET_TG_URL = window.__TELEGRAM_URL__;
 const TG_ENABLED = window.__TELEGRAM_ENABLED__;
-const ageWidget = document.getElementById('ageWidget');
-const ageModal = document.getElementById('ageModal');
-const ageUnlockModal = document.getElementById('ageUnlockModal');
-const contactIntentModal = document.getElementById('contactIntentModal');
-const intentMessengerLabel = document.getElementById('intentMessengerLabel');
-const intentTopic = document.getElementById('intentTopic');
-const intentReadyCheckbox = document.getElementById('intentReadyCheckbox');
-const intentTimerHint = document.getElementById('intentTimerHint');
-const intentConfirmBtn = document.getElementById('intentConfirmBtn');
 const AGE_KEY = 'gadalka_more_age_confirmed_v2';
-const ageCheckbox = document.getElementById('ageConfirmCheckbox');
-const ageConfirmBtn = document.getElementById('ageConfirmBtn');
 const onlineWords = ['клиент', 'клиента', 'клиента', 'клиента'];
 const nameVariants = ['{{NAME}}', 'Мастер {{NAME}}', 'Хранитель {{NAME}}', 'Куратор {{NAME}}', 'Защитница {{NAME}}'];
 const footerPrefix = 'Гадалка';
 const onlineIntro = 'Сейчас консультирую';
-let ageConfirmed = localStorage.getItem(AGE_KEY) === '1';
-let pendingMessengerType = '';
-let pendingMessengerUrl = '';
-let pendingMessengerGoal = '';
-let intentCountdownTimer = null;
-let intentCountdownFinished = false;
+let ageConfirmed = true;
 let sliderState = null;
 
 initGateway();
@@ -890,29 +815,17 @@ initDynamicContent();
 initMessengerIntent();
 
 function initGateway(){
+    ageConfirmed = true;
+    try { localStorage.setItem(AGE_KEY, '1'); } catch (err) {}
     applyAgeState();
-    document.querySelectorAll('[data-open-age]').forEach(btn => {
-        btn.addEventListener('click', evt => {
-            if (ageConfirmed) { return; }
-            evt.preventDefault();
-            openAgeModal();
-        });
-    });
-    if (ageCheckbox && ageConfirmBtn) {
-        ageCheckbox.addEventListener('change', () => { ageConfirmBtn.disabled = !ageCheckbox.checked; });
-    }
-    if (ageConfirmBtn) { ageConfirmBtn.addEventListener('click', confirmAgeAccess); }
     document.addEventListener('keydown', evt => {
-        if (evt.key === 'Escape') { closeAgeModal(); closeUnlockModal(); closeContactIntentModal(); }
+        if (evt.key === 'Escape') { closePrivacyModal(); }
     });
 }
 
 function applyAgeState(){
-    document.querySelectorAll('.messenger-link').forEach(link => {
-        link.classList.toggle('is-disabled', !ageConfirmed);
-    });
-    if (ageWidget) { ageWidget.style.display = ageConfirmed ? 'none' : 'block'; }
-    document.body.classList.toggle('contacts-locked', !ageConfirmed);
+    ageConfirmed = true;
+    document.body.classList.remove('contacts-locked');
     updateContactLinks();
 }
 
@@ -921,14 +834,14 @@ function updateContactLinks(){
     const phoneDisplay = document.getElementById('phoneDisplay');
     const phoneLink = document.getElementById('phoneLink');
     if (phoneDisplay) {
-        phoneDisplay.textContent = (ageConfirmed && phoneNum) ? formatPhoneNumber(phoneNum) : 'Номер появится после подтверждения 18+';
+        phoneDisplay.textContent = phoneNum ? formatPhoneNumber(phoneNum) : '';
     }
     if (phoneLink) {
-        if (ageConfirmed && phoneNum) {
+        if (phoneNum) {
             phoneLink.href = `tel:${phoneNum}`;
             phoneLink.classList.remove('is-locked');
         } else {
-            phoneLink.href = '#ageWidget';
+            phoneLink.href = '#';
             if (!phoneLink.classList.contains('is-locked')) { phoneLink.classList.add('is-locked'); }
             phoneLink.removeAttribute('target');
         }
@@ -936,43 +849,15 @@ function updateContactLinks(){
     const address = SETTINGS.address || '';
     const addressDisplay = document.getElementById('addressDisplay');
     if (addressDisplay) {
-        addressDisplay.textContent = (ageConfirmed && address) ? address : 'Адрес появится после подтверждения 18+';
+        addressDisplay.textContent = address || '';
     }
 }
 
-function openAgeModal(){
-    if (!ageModal) return;
-    ageModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    if (ageCheckbox) { ageCheckbox.checked = false; }
-    if (ageConfirmBtn) { ageConfirmBtn.disabled = true; }
-}
-
-function closeAgeModal(){
-    if (!ageModal) return;
-    ageModal.classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-function confirmAgeAccess(){
-    if (!ageCheckbox || !ageCheckbox.checked || !ageConfirmBtn || ageConfirmBtn.disabled) return;
-    ageConfirmed = true;
-    localStorage.setItem(AGE_KEY, '1');
-    applyAgeState();
-    closeAgeModal();
-    openUnlockModal();
-}
-
-function openUnlockModal(){
-    if (!ageUnlockModal) return;
-    ageUnlockModal.classList.add('visible');
-    setTimeout(closeUnlockModal, 5200);
-}
-
-function closeUnlockModal(){
-    if (!ageUnlockModal) return;
-    ageUnlockModal.classList.remove('visible');
-}
+function openAgeModal(){}
+function closeAgeModal(){}
+function confirmAgeAccess(){}
+function openUnlockModal(){}
+function closeUnlockModal(){}
 
 function initSmoothScroll(){
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -989,41 +874,37 @@ function initSmoothScroll(){
 function initMessengerIntent(){
     const waButtons = Array.from(document.querySelectorAll('[data-messenger="wa"],[data-wa],.btn-wa'));
     const tgButtons = Array.from(document.querySelectorAll('[data-messenger="tg"],[data-telegram],.btn-tg'));
-    const attachIntentHandlers = (buttons, type, targetUrl) => {
+    const attachDirectHandlers = (buttons, type, targetUrl) => {
         buttons.forEach(btn => {
             if (btn.tagName === 'A') {
-                btn.removeAttribute('href');
-                btn.removeAttribute('target');
-                btn.removeAttribute('rel');
-                btn.setAttribute('role', 'button');
-                btn.setAttribute('tabindex', '0');
+                btn.setAttribute('href', targetUrl);
+                btn.setAttribute('target', '_blank');
+                btn.setAttribute('rel', 'noopener');
             }
-            const openModal = evt => {
-                if (document.body.classList.contains('contacts-locked')) {
-                    if (evt) { evt.preventDefault(); }
-                    openAgeModal();
-                    return;
+            btn.addEventListener('click', () => {
+                if (window.__METRIKA_MESSENGER_VISIBLE__ !== false && typeof ym === 'function' && YM_COUNTER) {
+                    try {
+                        ym(YM_COUNTER, 'reachGoal', type === 'telegram' ? 'tg_click' : 'wa_click');
+                    } catch (err) {
+                        try { ym(YM_COUNTER, 'reachGoal', 'all_messenger'); } catch (innerErr) {}
+                    }
                 }
-                if (evt) {
-                    evt.preventDefault();
-                    evt.stopPropagation();
-                }
-                openContactIntentModal(type, targetUrl);
-            };
-            btn.addEventListener('click', openModal);
-            btn.addEventListener('keydown', evt => {
-                if (evt.key === 'Enter' || evt.key === ' ') {
-                    evt.preventDefault();
-                    openModal(evt);
-                }
+                const trackPromise = window.__siteStatsTracker && typeof window.__siteStatsTracker.track === 'function'
+                    ? window.__siteStatsTracker.track({
+                        channel: type === 'telegram' ? 'telegram' : 'whatsapp',
+                        moduleName: 'direct-click',
+                        buttonLabel: type === 'telegram' ? 'telegram' : 'whatsapp'
+                    })
+                    : Promise.resolve();
+                Promise.resolve(trackPromise).catch(() => {});
             });
         });
     };
     if (TARGET_WA_URL) {
-        attachIntentHandlers(waButtons, 'whatsapp', TARGET_WA_URL);
+        attachDirectHandlers(waButtons, 'whatsapp', TARGET_WA_URL);
     }
     if (TG_ENABLED && TARGET_TG_URL) {
-        attachIntentHandlers(tgButtons, 'telegram', TARGET_TG_URL);
+        attachDirectHandlers(tgButtons, 'telegram', TARGET_TG_URL);
     } else {
         tgButtons.forEach(btn => { btn.style.display = 'none'; });
         const sticky = document.getElementById('stickyMessengers');
@@ -1034,14 +915,6 @@ function initMessengerIntent(){
         document.querySelectorAll('[data-single-text]').forEach(el => {
             const fallback = el.getAttribute('data-single-text');
             if (fallback) { el.textContent = fallback; }
-        });
-    }
-    if (intentTopic) { intentTopic.addEventListener('change', updateIntentConfirmState); }
-    if (intentReadyCheckbox) { intentReadyCheckbox.addEventListener('change', updateIntentConfirmState); }
-    if (intentConfirmBtn) {
-        intentConfirmBtn.addEventListener('click', evt => {
-            evt.preventDefault();
-            handleIntentConfirm();
         });
     }
 }
@@ -1182,125 +1055,7 @@ function updateOnlineCount(){
     }
 }
 
-function setIntentConfirmState({disabled, text, href} = {}){
-    if (!intentConfirmBtn) { return; }
-    if (typeof text === 'string') { intentConfirmBtn.textContent = text; }
-    if (disabled) {
-        intentConfirmBtn.classList.add('disabled');
-        intentConfirmBtn.setAttribute('aria-disabled', 'true');
-        intentConfirmBtn.removeAttribute('href');
-        intentConfirmBtn.removeAttribute('target');
-        intentConfirmBtn.removeAttribute('rel');
-    } else {
-        intentConfirmBtn.classList.remove('disabled');
-        intentConfirmBtn.removeAttribute('aria-disabled');
-        if (href && window.__METRIKA_MESSENGER_VISIBLE__ !== false) {
-            intentConfirmBtn.setAttribute('href', href);
-            intentConfirmBtn.setAttribute('target', '_blank');
-            intentConfirmBtn.setAttribute('rel', 'noopener');
-        } else {
-            intentConfirmBtn.removeAttribute('href');
-            intentConfirmBtn.removeAttribute('target');
-            intentConfirmBtn.removeAttribute('rel');
-        }
-    }
-}
-
-function openContactIntentModal(type, url){
-    if (!contactIntentModal || !url) { return; }
-    pendingMessengerType = type;
-    pendingMessengerUrl = url;
-    pendingMessengerGoal = type === 'telegram' ? 'tg_click' : 'wa_click';
-    if (intentMessengerLabel) { intentMessengerLabel.textContent = type === 'telegram' ? 'Telegram' : 'WhatsApp'; }
-    if (intentTopic) { intentTopic.value = ''; }
-    if (intentReadyCheckbox) { intentReadyCheckbox.checked = false; }
-    intentCountdownFinished = false;
-    startIntentCountdown();
-    updateIntentConfirmState();
-    contactIntentModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeContactIntentModal(){
-    if (!contactIntentModal) { return; }
-    contactIntentModal.classList.remove('active');
-    clearInterval(intentCountdownTimer);
-    intentCountdownTimer = null;
-    intentCountdownFinished = false;
-    setIntentConfirmState({ disabled: true, text: 'Открыть чат' });
-    if (intentTimerHint) { intentTimerHint.textContent = ''; }
-    const privacyModal = document.getElementById('privacyModal');
-    if ((!ageModal || !ageModal.classList.contains('active')) && (!privacyModal || privacyModal.style.display !== 'block')) {
-        document.body.style.overflow = '';
-    }
-}
-
-function startIntentCountdown(){
-    if (!intentConfirmBtn) { return; }
-    let seconds = 2;
-    setIntentConfirmState({ disabled: true, text: `Подождите ${seconds} сек` });
-    if (intentTimerHint) { intentTimerHint.textContent = `Защита от случайных кликов: ${seconds} сек`; }
-    clearInterval(intentCountdownTimer);
-    intentCountdownTimer = setInterval(() => {
-        seconds--;
-        if (seconds <= 0) {
-            clearInterval(intentCountdownTimer);
-            intentCountdownTimer = null;
-            intentCountdownFinished = true;
-            if (intentTimerHint) { intentTimerHint.textContent = 'Можно нажать и перейти в чат'; }
-            updateIntentConfirmState();
-        } else {
-            setIntentConfirmState({ disabled: true, text: `Подождите ${seconds} сек` });
-            if (intentTimerHint) { intentTimerHint.textContent = `Защита от случайных кликов: ${seconds} сек`; }
-        }
-    }, 1000);
-}
-
-function updateIntentConfirmState(){
-    const ready = Boolean(pendingMessengerUrl && intentTopic && intentTopic.value && intentReadyCheckbox && intentReadyCheckbox.checked);
-    if (!intentCountdownFinished) {
-        setIntentConfirmState({ disabled: true });
-        return ready;
-    }
-    if (ready) {
-        setIntentConfirmState({ disabled: false, text: 'Открыть чат', href: pendingMessengerUrl });
-    } else {
-        setIntentConfirmState({ disabled: true, text: 'Открыть чат' });
-    }
-    return ready;
-}
-
-function handleIntentConfirm(){
-    if (!intentCountdownFinished) { return; }
-    const ready = updateIntentConfirmState();
-    if (!ready) { return; }
-    if (window.__METRIKA_MESSENGER_VISIBLE__ !== false && typeof ym === 'function' && YM_COUNTER && pendingMessengerGoal) {
-        try { ym(YM_COUNTER, 'reachGoal', pendingMessengerGoal); } catch (err) {}
-    } else if (window.__METRIKA_MESSENGER_VISIBLE__ !== false && typeof ym === 'function' && YM_COUNTER) {
-        try { ym(YM_COUNTER, 'reachGoal', 'all_messenger'); } catch (err) {}
-    }
-    const target = pendingMessengerUrl;
-    const channel = /t\.me|telegram\.me/i.test(target || '') ? 'telegram' : 'whatsapp';
-    const topicValue = intentTopic && intentTopic.value ? String(intentTopic.value).trim() : '';
-    const trackPromise = window.__siteStatsTracker && typeof window.__siteStatsTracker.track === 'function'
-        ? window.__siteStatsTracker.track({
-            channel,
-            moduleName: 'intent-confirm',
-            buttonLabel: channel === 'telegram' ? 'telegram' : 'whatsapp',
-            topic: topicValue
-        })
-        : Promise.resolve();
-    closeContactIntentModal();
-    let opened = false;
-    try {
-        const newTab = window.open(target, '_blank');
-        opened = Boolean(newTab);
-    } catch (err) {}
-    if (!opened) {
-        try { window.location.href = target; } catch (err) {}
-    }
-    Promise.resolve(trackPromise).catch(() => {});
-}
+function closeContactIntentModal(){}
 
 function openPrivacyModal(){
     const modal = document.getElementById('privacyModal');
